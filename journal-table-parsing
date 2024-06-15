@@ -1,0 +1,43 @@
+--The following queries were all designed to take data from different journal tables and select the most pertinent and human-readable information for troubleshooting. 
+
+--They demonstrate aliasing, multiple joins, and selecting individual nodes within XML datatypes
+
+--table names changed for security
+
+select cntnr_name, aj.date_stamp, aj.scanner_id, sh.scanner_description, sh.scanner_num, aj.activity_type, 
+rh.resource_name as activity_desc,
+activity_data.value('(/xml/CONTROLS_DEST)[1]','varchar(100)') as controls_dest,
+activity_data, app_id, * from activity_journal aj
+left join scanner_header sh on aj.scanner_id = sh.scanner_id
+left join activity_config ac on aj.activity_type = ac.activity_type
+left join resource_header rh on rh.resource_id = ac.resource_id
+where cntnr_name = 'X000442' 
+order by aj.date_stamp desc
+
+
+Order_activity_journal:
+select oj.date_stamp, oh.order_name, rh.resource_name, ah.app_name, uh.login_name, oj.activity_data
+from order_activity_journal oj
+left join order_header oh on oj.order_id = oh.order_id
+left join activity_config ac on oj.activity_type = ac.activity_type
+left join resource_header rh on ac.resource_id = rh.resource_id
+left join app_header ah on oj.app_id = ah.app_id
+left join user_header uh on oj.user_id = uh.user_id
+where order_name in ('CNT1551424','CNT1551532')
+
+Carton_Journal:
+select cj.date_stamp, oh.order_name, oh.order_status, osl.sub_line_status, ch.cntnr_name, rh.resource_name, ah.app_name,
+cj.activity_data.value('(/xml/PRODUCT_NAME)[1]','varchar(100)') as prod_name,
+oj.order_line_id, oj.order_sub_line_id,
+cj.activity_data
+from carton_journal cj
+left join cntnr_header ch on cj.cntnr_id = ch.cntnr_id
+left join activity_config ac on cj.activity_type = ac.activity_type
+left join resource_header rh on ac.resource_id = rh.resource_id
+left join app_header ah on cj.app_id = ah.app_id
+left join order_journal oj on oj.txn_id = cj.txn_id
+left join order_header oh on oh.order_id = oj.order_id
+left join order_sub_line osl on osl.order_sub_line_id = oj.order_sub_line_id
+--left join user_header uh on cj.user_id = uh.user_id
+where ch.cntnr_name in ('S0000002723','S0000003036')
+order by 5, 1
