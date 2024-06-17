@@ -3,14 +3,10 @@ I wrote this script in 2018 to assist with troubleshooting changes made by users
 
 DB and table names have been changed for security reasons. 
 
-There is probably a much simpler way to do this, but I no longer have access to the DB schema to work that out.
-
-
 This script attempts to determine where a change occurred in the system by pulling information from the Queue table,
 identifying sets of changes that were queued up, and then finding out what xStationID was not queued to, giving
 indicating the change was likely pushed from that station. 
 
-It is intended to be run on faciity servers only.
 
 It starts by taking a Recipient LastName and part of an Order Description and finding all queued records matching those. 
 It then groups the queued records by minute to establish when individual changes were queued to a group of machines.
